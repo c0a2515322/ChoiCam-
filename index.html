@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChoiCam♡ - ベビーシッターマッチング</title>
+    <link rel="icon" type="image/png" href="icon.png" />
+    <link rel="apple-touch-icon" href="icon.png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- React & ReactDOM (UMD) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <!-- Babel Standalone -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3', 300: '#fda4af',
+                            400: '#fb7185', 500: '#f43f5e', 600: '#e11d48', 700: '#be123c',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-slate-50 text-slate-800 antialiased">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- Types removed for pure JavaScript compatibility ---
+
+        // --- constants.ts ---
+        const LOCATIONS = ['東京都', '神奈川県', '埼玉県', '千葉県', '大阪府', '京都府', '兵庫県'];
+
+        const POPULAR_TAGS = ['保育士資格', '英語対応', '病児保育', '新生児対応', '料理可', '宿題サポート', 'ピアノ指導'];
+
+        const MOCK_SITTERS = [
+            {
+                id: 's1',
+                name: '佐藤 綾子',
+                age: 28,
+                location: '東京都',
+                hourlyRate: 2500,
+                experienceYears: 5,
+                tags: ['保育士資格', '新生児対応', '料理可'],
+                bio: '元保育園勤務の経験を活かし、安全で楽しい保育を心がけています。0歳児からの対応が可能です。栄養バランスを考えたお食事作りもお任せください。',
+                imageUrl: 'https://picsum.photos/id/64/400/400',
+                rating: 4.8,
+                reviewCount: 42,
+                available: true,
+                reviews: [
+                    { id: 'r1', author: '田中様', rating: 5, comment: 'とても安心して預けられました。子供も懐いています。', date: '2023-10-01' }
+                ]
+            },
+            {
+                id: 's2',
+                name: '鈴木 健太',
+                age: 24,
+                location: '神奈川県',
+                hourlyRate: 2000,
+                experienceYears: 2,
+                tags: ['英語対応', '宿題サポート', 'スポーツ'],
+                bio: '大学で児童教育を専攻しています。英語での遊びや、宿題のサポートが得意です。外遊びが大好きな活発なお子様と一緒に遊ぶのが楽しみです！',
+                imageUrl: 'https://picsum.photos/id/91/400/400',
+                rating: 4.5,
+                reviewCount: 15,
+                available: true,
+                reviews: []
+            },
+            {
+                id: 's3',
+                name: '高橋 美咲',
+                age: 45,
+                location: '埼玉県',
+                hourlyRate: 1800,
+                experienceYears: 15,
+                tags: ['病児保育', '料理可', '保育士資格'],
+                bio: '子育て経験豊富なママシッターです。急な病気の場合の病児保育にも対応しております。実家のような安心感を提供できればと思います。',
+                imageUrl: 'https://picsum.photos/id/342/400/400',
+                rating: 4.9,
+                reviewCount: 120,
+                available: true,
+                reviews: []
+            },
+            {
+                id: 's4',
+                name: 'エマ・ウィリアムズ',
+                age: 30,
+                location: '東京都',
+                hourlyRate: 3500,
+                experienceYears: 7,
+                tags: ['英語対応', 'ピアノ指導', '新生児対応'],
+                bio: 'Hi! I am Emma. 英語環境での保育を提供します。ピアノのレッスンも可能です。楽しく遊びながら自然な英語に触れさせたい親御様、ぜひご相談ください。',
+                imageUrl: 'https://picsum.photos/id/338/400/400',
+                rating: 5.0,
+                reviewCount: 33,
+                available: true,
+                reviews: []
+            },
+            {
+                id: 's5',
+                name: '伊藤 翔',
+                age: 22,
+                location: '大阪府',
+                hourlyRate: 1800,
+                experienceYears: 1,
+                tags: ['スポーツ', '宿題サポート'],
+                bio: '体力には自信があります！男の子兄弟の世話に慣れています。サッカーや野球など、体を動かす遊びが得意です。',
+                imageUrl: 'https://picsum.photos/id/177/400/400',
+                rating: 4.2,
+                reviewCount: 8,
+                available: true,
+                reviews: []
+            },
+            {
+                id: 's6',
+                name: '渡辺 華子',
+                age: 52,
+                location: '兵庫県',
+                hourlyRate: 2200,
+                experienceYears: 20,
+                tags: ['保育士資格', '料理可', '病児保育', '新生児対応'],
+                bio: '長年の保育士経験と自身の子育て経験を活かし、親御様のサポートを全力で行います。作り置きのお料理なども好評いただいております。',
+                imageUrl: 'https://picsum.photos/id/237/400/400',
+                rating: 4.9,
+                reviewCount: 205,
+                available: false,
+                reviews: []
+            },
+            {
+                id: 's7',
+                name: '山田 太郎',
+                age: 35,
+                location: '千葉県',
+                hourlyRate: 2800,
+                experienceYears: 10,
+                tags: ['保育士資格', 'ピアノ指導', '宿題サポート'],
+                bio: '元小学校教諭です。勉強の教え方には定評があります。ピアノも教えられますので、習い事の送迎＋レッスンのような使い方も可能です。',
+                imageUrl: 'https://picsum.photos/id/1005/400/400',
+                rating: 4.7,
+                reviewCount: 56,
+                available: true,
+                reviews: []
+            },
+            {
+                id: 's8',
+                name: '小林 さくら',
+                age: 26,
+                location: '京都府',
+                hourlyRate: 2100,
+                experienceYears: 4,
+                tags: ['英語対応', '料理可'],
+                bio: '京都で観光ガイドもしているシッターです。明るく元気な対応を心がけています。簡単な英会話レッスンも可能です。',
+                imageUrl: 'https://picsum.photos/id/65/400/400',
+                rating: 4.6,
+                reviewCount: 22,
+                available: true,
+                reviews: []
+            }
+        ];
+
+        // --- services/geminiService.ts ---
+        // (Removed AI Service)
+
+        // --- Components ---
+
+        // SitterList.tsx
+        const SitterList = ({ sitters, onSelectSitter }) => {
+            return (
+                <div className="max-w-7xl mx-auto px-4 py-12">
+                    <h2 className="text-3xl font-bold text-slate-800 mb-8 text-center">
+                        <span className="text-brand-600">おすすめ</span>のシッター
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {sitters.map(sitter => (
+                            <SitterCard key={sitter.id} sitter={sitter} onClick={onSelectSitter} />
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        // SitterCard.tsx
+        const SitterCard = ({ sitter, onClick }) => {
+            return (
+                <div
+                    className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group"
+                    onClick={() => onClick(sitter)}
+                >
+                    <div className="relative h-48 overflow-hidden">
+                        <img
+                            src={sitter.imageUrl}
+                            alt={sitter.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-xs font-bold text-slate-700 flex items-center shadow-sm">
+                            <i className="fa-solid fa-star text-yellow-400 mr-1"></i>
+                            {sitter.rating.toFixed(1)} ({sitter.reviewCount})
+                        </div>
+                        {sitter.available && (
+                            <div className="absolute bottom-3 left-3 bg-green-500/90 text-white px-2 py-1 rounded-lg text-xs font-bold shadow-sm">
+                                <i className="fa-regular fa-clock mr-1"></i>
+                                即日可
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="p-5">
+                        <div className="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-800">{sitter.name}</h3>
+                                <p className="text-sm text-slate-500"><i className="fa-solid fa-location-dot mr-1"></i>{sitter.location}</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-lg font-bold text-brand-600">¥{sitter.hourlyRate.toLocaleString()}</p>
+                                <p className="text-xs text-slate-400">/ 1時間</p>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-1 mb-4 h-12 overflow-hidden">
+                            {sitter.tags.slice(0, 3).map(tag => (
+                                <span key={tag} className="px-2 py-1 bg-brand-50 text-brand-600 text-xs rounded-md">
+                                    {tag}
+                                </span>
+                            ))}
+                            {sitter.tags.length > 3 && (
+                                <span className="px-2 py-1 bg-slate-50 text-slate-400 text-xs rounded-md">+{sitter.tags.length - 3}</span>
+                            )}
+                        </div>
+
+                        <p className="text-sm text-slate-600 line-clamp-2 mb-4 h-10">
+                            {sitter.bio}
+                        </p>
+
+                        <button className="w-full py-2 rounded-xl bg-slate-100 text-slate-700 font-medium group-hover:bg-brand-500 group-hover:text-white transition-colors text-sm">
+                            詳細を見る
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // BookingModal.tsx
+        const BookingModal = ({ sitter, onClose, onSubmit }) => {
+            const [step, setStep] = useState(1);
+            const [isSubmitting, setIsSubmitting] = useState(false);
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                setIsSubmitting(true);
+                // Simulate API call
+                setTimeout(() => {
+                    setIsSubmitting(false);
+                    onSubmit();
+                }, 1500);
+            };
+
+            return (
+                <div className="fixed inset-0 z-50 overflow-y-auto">
+                    <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                        <div className="fixed inset-0 transition-opacity" aria-hidden="true" onClick={onClose}>
+                            <div className="absolute inset-0 bg-slate-900 opacity-75"></div>
+                        </div>
+
+                        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                        <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+                            {step === 1 ? (
+                                <form onSubmit={handleSubmit} className="p-6 sm:p-8">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h3 className="text-xl font-bold text-slate-900">予約リクエスト</h3>
+                                        <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600">
+                                            <i className="fa-solid fa-times text-xl"></i>
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-center mb-6 bg-slate-50 p-4 rounded-xl">
+                                        <img src={sitter.imageUrl} alt={sitter.name} className="w-16 h-16 rounded-full object-cover mr-4" />
+                                        <div>
+                                            <h4 className="font-bold text-slate-800">{sitter.name}</h4>
+                                            <p className="text-sm text-brand-600 font-bold">¥{sitter.hourlyRate.toLocaleString()} / 時間</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">希望日時</label>
+                                            <input type="datetime-local" className="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500" required />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">利用時間</label>
+                                            <select className="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+                                                <option value="2">2時間</option>
+                                                <option value="3">3時間</option>
+                                                <option value="4">4時間</option>
+                                                <option value="5">5時間 〜</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">お子様の情報・備考</label>
+                                            <textarea
+                                                className="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 h-24"
+                                                placeholder="お子様の年齢、アレルギー、特別な要望など"
+                                            ></textarea>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-8">
+                                        <button
+                                            type="submit"
+                                            disabled={isSubmitting}
+                                            className="w-full bg-brand-600 text-white font-bold py-3 px-4 rounded-full shadow-lg hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors disabled:opacity-70 flex justify-center items-center"
+                                        >
+                                            {isSubmitting ? (
+                                                <>
+                                                    <i className="fa-solid fa-spinner fa-spin mr-2"></i> 処理中...
+                                                </>
+                                            ) : '予約をリクエストする'}
+                                        </button>
+                                        <p className="mt-3 text-xs text-center text-slate-500">
+                                            まだ確定ではありません。シッターからの承認をお待ちください。
+                                        </p>
+                                    </div>
+                                </form>
+                            ) : null}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // AIConcierge.tsx (Removed)
+
+        // Header.tsx
+        const Header = ({ currentView, onNavigate }) => {
+            const isAuthFlow = ['REGISTER', 'CHILD_PROFILE'].includes(currentView);
+            const isAppFlow = ['DASHBOARD', 'MONITORING', 'REVIEW'].includes(currentView);
+
+            return (
+                <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-brand-100 shadow-sm">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex justify-between items-center h-16">
+                            <div className="flex items-center cursor-pointer" onClick={() => onNavigate('HOME')}>
+                                <img src="icon.png" alt="ChoiCam♡" className="w-8 h-8 rounded-lg mr-2" />
+                                <span className="font-bold text-xl text-brand-600 tracking-tight">ChoiCam♡</span>
+                            </div>
+
+                            <nav className="flex space-x-8">
+                                {currentView === 'HOME' && (
+                                    <>
+                                        <button className="text-sm font-medium text-slate-500 hover:text-brand-600">ログイン</button>
+                                        <button
+                                            onClick={() => onNavigate('REGISTER')}
+                                            className="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-all shadow-md hover:shadow-lg"
+                                        >
+                                            無料登録
+                                        </button>
+                                    </>
+                                )}
+
+                                {isAuthFlow && (
+                                    <span className="text-sm text-slate-400 font-medium">新規登録プロセス</span>
+                                )}
+
+                                {isAppFlow && (
+                                    <div className="flex items-center space-x-4">
+                                        <div className="flex items-center text-slate-600 text-sm font-medium">
+                                            <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center mr-2">
+                                                <i className="fa-solid fa-user"></i>
+                                            </div>
+                                            保護者様
+                                        </div>
+                                        <button
+                                            onClick={() => onNavigate('HOME')}
+                                            className="text-xs text-slate-400 hover:text-slate-600"
+                                        >
+                                            ログアウト
+                                        </button>
+                                    </div>
+                                )}
+                            </nav>
+                        </div>
+                    </div>
+                </header>
+            );
+        };
+
+        // Hero.tsx
+        const Hero = ({ onNavigate }) => {
+            return (
+                <div className="relative bg-brand-50 pt-16 pb-20 lg:pt-24 lg:pb-28 overflow-hidden min-h-[calc(100vh-64px)] flex items-center">
+                    <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10 w-full">
+                        <div className="text-center lg:text-left lg:grid lg:grid-cols-2 lg:gap-12 items-center">
+                            <div>
+                                <h1 className="text-4xl tracking-tight font-extrabold text-slate-900 sm:text-5xl md:text-6xl mb-6">
+                                    <span className="block">安心を、</span>
+                                    <span className="block text-brand-500">もっと身近に。</span>
+                                </h1>
+                                <p className="mt-4 max-w-2xl text-xl text-slate-600 lg:mx-0 mx-auto">
+                                    ChoiCam♡は、シッターマッチングから見守りまでを一元管理。
+                                    アプリ一つで、大切なお子様の安全と笑顔を守ります。
+                                </p>
+                                <div className="mt-8 flex justify-center lg:justify-start gap-4">
+                                    <button
+                                        onClick={() => onNavigate('REGISTER')}
+                                        className="px-8 py-3.5 border border-transparent text-base font-medium rounded-full text-white bg-brand-600 hover:bg-brand-700 md:text-lg md:px-10 shadow-lg hover:shadow-xl transition-all"
+                                    >
+                                        今すぐ始める（無料）
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="mt-12 lg:mt-0 relative">
+                                <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white transform rotate-2 hover:rotate-0 transition-transform duration-500">
+                                    <img
+                                        className="w-full object-cover h-96 lg:h-[500px]"
+                                        src="https://images.unsplash.com/photo-1581093450065-4f6c138d9799?q=80&w=2070&auto=format&fit=crop"
+                                        alt="Mother utilizing camera app"
+                                    />
+                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6 text-white">
+                                        <p className="font-bold text-lg">「外出先でもカメラで確認できるので安心です」</p>
+                                        <p className="text-sm opacity-90 mt-1">リアルタイム見守り機能</p>
+                                    </div>
+                                </div>
+                                {/* Decorative blob */}
+                                <div className="absolute -top-10 -right-10 w-40 h-40 bg-yellow-200 rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-pulse"></div>
+                                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-brand-200 rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-pulse delay-700"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Registration.tsx
+        const Registration = ({ onNext }) => {
+            const [loading, setLoading] = useState(false);
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                setLoading(true);
+                // Simulate API registration
+                setTimeout(() => {
+                    setLoading(false);
+                    onNext();
+                }, 1000);
+            };
+
+            const inputClass = "w-full px-4 py-3 text-lg border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 focus:outline-none text-slate-900 placeholder-slate-400 bg-slate-50 transition-all";
+            const labelClass = "block text-base font-bold text-slate-700 mb-2";
+
+            return (
+                <div className="max-w-md mx-auto mt-10 px-4">
+                    <div className="bg-white rounded-2xl shadow-lg p-8 border border-slate-100">
+                        <div className="text-center mb-8">
+                            <div className="w-12 h-12 bg-brand-100 text-brand-600 rounded-full flex items-center justify-center text-xl mx-auto mb-4">
+                                <i className="fa-solid fa-user-plus"></i>
+                            </div>
+                            <h2 className="text-2xl font-bold text-slate-800">新規会員登録</h2>
+                            <p className="text-slate-500 mt-2">まずは保護者様の情報を登録してください</p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div>
+                                <label className={labelClass}>お名前</label>
+                                <input
+                                    type="text"
+                                    required
+                                    className={inputClass}
+                                    placeholder="山田 花子"
+                                />
+                            </div>
+                            <div>
+                                <label className={labelClass}>メールアドレス</label>
+                                <input
+                                    type="email"
+                                    required
+                                    className={inputClass}
+                                    placeholder="example@nannyconnect.jp"
+                                />
+                            </div>
+                            <div>
+                                <label className={labelClass}>パスワード</label>
+                                <input
+                                    type="password"
+                                    required
+                                    className={inputClass}
+                                    placeholder="8文字以上の半角英数字"
+                                />
+                            </div>
+
+                            <div className="flex items-center pt-2">
+                                <input type="checkbox" required id="terms" className="h-5 w-5 text-brand-600 focus:ring-brand-500 border-slate-300 rounded cursor-pointer" />
+                                <label htmlFor="terms" className="ml-3 block text-sm text-slate-600 font-medium">
+                                    <a href="#" className="text-brand-600 hover:underline">利用規約</a> と <a href="#" className="text-brand-600 hover:underline">プライバシーポリシー</a> に同意します
+                                </label>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full py-4 px-4 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold text-lg shadow-md hover:shadow-lg transition-all flex items-center justify-center mt-4"
+                            >
+                                {loading ? <i className="fa-solid fa-spinner fa-spin"></i> : '次へ進む'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
+        // ChildProfile.tsx
+        const ChildProfile = ({ onNext }) => {
+            const [profile, setProfile] = useState({
+                name: '',
+                age: '',
+                gender: '未選択',
+                allergies: '',
+                notes: ''
+            });
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                onNext(profile);
+            };
+
+            const inputClass = "w-full px-4 py-3 text-lg border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 focus:outline-none text-slate-900 placeholder-slate-400 bg-slate-50 transition-all";
+            const labelClass = "block text-base font-bold text-slate-700 mb-2";
+
+            return (
+                <div className="max-w-md mx-auto mt-10 px-4">
+                    <div className="bg-white rounded-2xl shadow-lg p-8 border border-slate-100">
+                        <div className="text-center mb-8">
+                            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl mx-auto mb-4">
+                                <i className="fa-solid fa-child"></i>
+                            </div>
+                            <h2 className="text-2xl font-bold text-slate-800">お子様のプロフィール</h2>
+                            <p className="text-slate-500 mt-2">最適なシッターマッチングのために教えてください</p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div>
+                                <label className={labelClass}>お子様のお名前</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={profile.name}
+                                    onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                                    className={inputClass}
+                                    placeholder="例: たろう"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label className={labelClass}>年齢</label>
+                                    <div className="relative">
+                                        <select
+                                            required
+                                            value={profile.age}
+                                            onChange={(e) => setProfile({ ...profile, age: e.target.value })}
+                                            className={`${inputClass} appearance-none`}
+                                        >
+                                            <option value="">選択</option>
+                                            <option value="0">0歳</option>
+                                            <option value="1">1歳</option>
+                                            <option value="2">2歳</option>
+                                            <option value="3">3歳</option>
+                                            <option value="4">4歳〜</option>
+                                        </select>
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                                            <i className="fa-solid fa-chevron-down text-sm"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className={labelClass}>性別</label>
+                                    <div className="relative">
+                                        <select
+                                            value={profile.gender}
+                                            onChange={(e) => setProfile({ ...profile, gender: e.target.value })}
+                                            className={`${inputClass} appearance-none`}
+                                        >
+                                            <option value="未選択">未選択</option>
+                                            <option value="男の子">男の子</option>
+                                            <option value="女の子">女の子</option>
+                                        </select>
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                                            <i className="fa-solid fa-chevron-down text-sm"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className={labelClass}>アレルギー <span className="text-sm font-normal text-slate-400 ml-1">※ない場合は「なし」</span></label>
+                                <input
+                                    type="text"
+                                    value={profile.allergies}
+                                    onChange={(e) => setProfile({ ...profile, allergies: e.target.value })}
+                                    className={inputClass}
+                                    placeholder="例: 卵、そば、なし"
+                                />
+                            </div>
+
+                            <div>
+                                <label className={labelClass}>特記事項・好きな遊び</label>
+                                <textarea
+                                    value={profile.notes}
+                                    onChange={(e) => setProfile({ ...profile, notes: e.target.value })}
+                                    className={`${inputClass} h-32 resize-none leading-relaxed`}
+                                    placeholder="例: お絵かきが好きです。人見知りがあります。"
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                className="w-full py-4 px-4 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold text-lg shadow-md hover:shadow-lg transition-all mt-6"
+                            >
+                                登録して次へ
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
+        // Monitoring.tsx
+        const Monitoring = ({ childProfile, onEndSession }) => {
+            const videoRef = useRef(null);
+            const [isRecording, setIsRecording] = useState(false);
+            const [sessionTime, setSessionTime] = useState(0);
+            const [stream, setStream] = useState(null);
+
+            useEffect(() => {
+                const startCamera = async () => {
+                    try {
+                        const mediaStream = await navigator.mediaDevices.getUserMedia({
+                            video: { facingMode: "user" },
+                            audio: true
+                        });
+                        setStream(mediaStream);
+                        if (videoRef.current) {
+                            videoRef.current.srcObject = mediaStream;
+                        }
+                    } catch (err) {
+                        console.error("Camera access denied:", err);
+                        // alert("カメラへのアクセスを許可してください。");
+                    }
+                };
+
+                startCamera();
+
+                return () => {
+                    if (stream) {
+                        stream.getTracks().forEach(track => track.stop());
+                    }
+                };
+            }, []);
+
+            useEffect(() => {
+                let interval;
+                if (isRecording) {
+                    interval = window.setInterval(() => {
+                        setSessionTime(prev => prev + 1);
+                    }, 1000);
+                }
+                return () => clearInterval(interval);
+            }, [isRecording]);
+
+            const toggleRecording = () => {
+                setIsRecording(!isRecording);
+            };
+
+            const formatTime = (seconds) => {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            };
+
+            return (
+                <div className="flex flex-col h-[calc(100vh-64px)] bg-slate-900">
+                    {/* Video Area */}
+                    <div className="relative flex-1 bg-black flex items-center justify-center overflow-hidden">
+                        <video
+                            ref={videoRef}
+                            autoPlay
+                            playsInline
+                            muted
+                            className="w-full h-full object-cover"
+                        />
+
+                        {/* Overlays */}
+                        <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
+                            <div className="bg-black/50 backdrop-blur-md text-white px-3 py-1.5 rounded-lg flex items-center space-x-2">
+                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                                <span className="text-sm font-medium">LIVE</span>
+                            </div>
+                            <div className="bg-black/50 backdrop-blur-md text-white px-3 py-1.5 rounded-lg">
+                                <i className="fa-solid fa-child mr-2"></i>
+                                {childProfile.name}ちゃんを見守り中
+                            </div>
+                        </div>
+
+                        {isRecording && (
+                            <div className="absolute top-16 right-4 flex items-center space-x-2 bg-red-600/80 text-white px-3 py-1 rounded-lg animate-pulse">
+                                <div className="w-3 h-3 rounded-full bg-red-500 border border-white"></div>
+                                <span className="font-mono">{formatTime(sessionTime)}</span>
+                                <span className="text-xs">REC</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Controls */}
+                    <div className="bg-slate-800 p-6 pb-10 rounded-t-3xl border-t border-slate-700 shadow-[0_-5px_20px_rgba(0,0,0,0.5)]">
+                        <div className="max-w-md mx-auto">
+                            <div className="flex justify-between items-center mb-6">
+                                <div>
+                                    <h3 className="text-white font-bold text-lg">シッター: 佐藤 綾子</h3>
+                                    <p className="text-slate-400 text-sm">セッション開始から 15分経過</p>
+                                </div>
+                                <div className="text-brand-400 text-2xl">
+                                    <i className="fa-solid fa-wifi"></i>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-center space-x-8">
+                                <button
+                                    onClick={toggleRecording}
+                                    className={`w-16 h-16 rounded-full flex items-center justify-center border-4 transition-all ${isRecording ? 'border-red-500 bg-transparent' : 'border-white bg-red-600 hover:bg-red-700'}`}
+                                >
+                                    {isRecording ? (
+                                        <div className="w-6 h-6 bg-red-500 rounded-sm"></div>
+                                    ) : (
+                                        <div className="w-6 h-6 bg-white rounded-full"></div>
+                                    )}
+                                </button>
+
+                                <button
+                                    onClick={onEndSession}
+                                    className="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 rounded-xl transition-colors"
+                                >
+                                    <i className="fa-solid fa-stop mr-2"></i>
+                                    見守りを終了
+                                </button>
+                            </div>
+                            <p className="text-center text-slate-500 text-xs mt-4">
+                                {isRecording ? '録画中です' : '録画ボタンを押して記録を開始'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // ReviewSession.tsx
+        const ReviewSession = ({ onComplete }) => {
+            const [rating, setRating] = useState(0);
+            const [comment, setComment] = useState('');
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                alert("レビューを送信しました！ご利用ありがとうございました。");
+                onComplete();
+            };
+
+            const inputClass = "w-full px-4 py-3 text-lg border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 focus:outline-none text-slate-900 placeholder-slate-400 bg-slate-50 transition-all";
+            const labelClass = "block text-base font-bold text-slate-700 mb-2 text-left";
+
+            return (
+                <div className="max-w-md mx-auto mt-10 px-4 animate-fade-in-up">
+                    <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-100 text-center">
+                        <div className="w-20 h-20 bg-green-100 text-green-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">
+                            <i className="fa-solid fa-check"></i>
+                        </div>
+
+                        <h2 className="text-2xl font-bold text-slate-800 mb-2">見守りが終了しました</h2>
+                        <p className="text-slate-500 mb-8">今回のシッティングはいかがでしたか？</p>
+
+                        <form onSubmit={handleSubmit}>
+                            <div className="mb-8">
+                                <label className={labelClass + " text-center"}>シッターの評価</label>
+                                <div className="flex justify-center space-x-3 mt-2">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <button
+                                            key={star}
+                                            type="button"
+                                            onClick={() => setRating(star)}
+                                            className={`text-4xl transition-transform hover:scale-110 focus:outline-none ${rating >= star ? 'text-yellow-400' : 'text-slate-200'}`}
+                                        >
+                                            <i className="fa-solid fa-star"></i>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="mb-8">
+                                <label className={labelClass}>コメント・感想</label>
+                                <textarea
+                                    value={comment}
+                                    onChange={(e) => setComment(e.target.value)}
+                                    className={`${inputClass} h-40 resize-none leading-relaxed`}
+                                    placeholder="シッターへの感謝の言葉や、気になった点などをご記入ください。"
+                                ></textarea>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={rating === 0}
+                                className="w-full py-4 px-4 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold text-lg shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                レビューを送信する
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={onComplete}
+                                className="mt-6 text-sm font-medium text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                                スキップしてトップへ
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- App.tsx ---
+        function App() {
+            const [view, setView] = useState('HOME');
+            const [childProfile, setChildProfile] = useState(null);
+
+            // Flow Handlers
+            const handleRegistrationComplete = () => {
+                setView('CHILD_PROFILE');
+                window.scrollTo(0, 0);
+            };
+
+            const handleProfileComplete = (profile) => {
+                setChildProfile(profile);
+                setView('DASHBOARD');
+                window.scrollTo(0, 0);
+            };
+
+            const startSession = () => {
+                setView('MONITORING');
+            };
+
+            const endSession = () => {
+                setView('REVIEW');
+                window.scrollTo(0, 0);
+            };
+
+            const handleReviewComplete = () => {
+                setView('HOME');
+                setChildProfile(null);
+                window.scrollTo(0, 0);
+            };
+
+            // Dashboard View (Interim state between profile and monitoring)
+            const renderDashboard = () => (
+                <div className="max-w-4xl mx-auto px-4 py-12">
+                    <div className="bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden">
+                        <div className="bg-brand-50 p-8 text-center border-b border-brand-100">
+                            <h2 className="text-2xl font-bold text-slate-800">準備が完了しました</h2>
+                            <p className="text-slate-600 mt-2">本日担当のシッターが到着しました。</p>
+                        </div>
+
+                        <div className="p-8">
+                            <div className="flex items-center bg-slate-50 p-4 rounded-2xl mb-8">
+                                <img src="https://picsum.photos/id/64/400/400" className="w-16 h-16 rounded-full object-cover mr-4 shadow-sm" alt="Sitter" />
+                                <div>
+                                    <h3 className="font-bold text-lg">佐藤 綾子 シッター</h3>
+                                    <p className="text-sm text-slate-500">
+                                        <i className="fa-solid fa-star text-yellow-400 mr-1"></i>4.8 (42件)
+                                    </p>
+                                </div>
+                                <div className="ml-auto">
+                                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">到着済み</span>
+                                </div>
+                            </div>
+
+                            <div className="mb-8">
+                                <h4 className="font-bold text-slate-700 mb-4">お預かりするお子様</h4>
+                                <div className="flex items-center space-x-2">
+                                    <div className="w-10 h-10 bg-brand-100 text-brand-500 rounded-full flex items-center justify-center">
+                                        <i className="fa-solid fa-child"></i>
+                                    </div>
+                                    <div>
+                                        <p className="font-bold">{childProfile?.name} ちゃん ({childProfile?.age}歳)</p>
+                                        <p className="text-xs text-slate-500">{childProfile?.notes || '特記事項なし'}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={startSession}
+                                className="w-full bg-brand-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-brand-700 transition-all flex items-center justify-center text-lg animate-pulse"
+                            >
+                                <i className="fa-solid fa-video mr-3"></i>
+                                見守りを開始する
+                            </button>
+                            <p className="text-center text-xs text-slate-400 mt-4">
+                                ※見守りを開始すると、カメラと録画機能が有効になります
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="min-h-screen bg-slate-50 font-sans">
+                    <Header currentView={view} onNavigate={setView} />
+
+                    <main>
+                        {view === 'HOME' && <Hero onNavigate={setView} />}
+                        {view === 'REGISTER' && <Registration onNext={handleRegistrationComplete} />}
+                        {view === 'CHILD_PROFILE' && <ChildProfileInput onNext={handleProfileComplete} />}
+                        {view === 'DASHBOARD' && renderDashboard()}
+                        {view === 'MONITORING' && childProfile && <Monitoring childProfile={childProfile} onEndSession={endSession} />}
+                        {view === 'REVIEW' && <ReviewSession onComplete={handleReviewComplete} />}
+                    </main>
+
+                    {/* Simplified Footer - Hide during Monitoring */}
+                    {view !== 'MONITORING' && (
+                        <footer className="bg-white border-t border-slate-200 py-8 mt-12">
+                            <div className="max-w-7xl mx-auto px-4 text-center text-slate-400 text-xs">
+                                <p>&copy; 2025 ChoiCam♡. 安心・安全の見守りサービス</p>
+                            </div>
+                        </footer>
+                    )}
+                </div>
+            );
+        }
+
+        // Fix for ChildProfile naming conflict (imported as ChildProfileInput in original App.tsx)
+        const ChildProfileInput = ChildProfile;
+
+        // --- index.tsx ---
+        const rootElement = document.getElementById('root');
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(
+            <React.StrictMode>
+                <App />
+            </React.StrictMode>
+        );
+    </script>
+</body>
+
+</html>
