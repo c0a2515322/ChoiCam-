@@ -3,10 +3,27 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>ChoiCam♡ - ベビーシッターマッチング</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="シッターマッチングから見守りまでを一元管理。大切なお子様の安全と笑顔を守ります。" />
+    <meta name="theme-color" content="#f43f5e" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="ChoiCam♡" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-TileColor" content="#f43f5e" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    
+    <!-- Icons -->
     <link rel="icon" type="image/png" href="icon.png" />
     <link rel="apple-touch-icon" href="icon.png" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json" />
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
@@ -69,6 +86,37 @@
 
 <body class="bg-slate-50 text-slate-800 antialiased">
     <div id="root"></div>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        // Service Worker登録
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker登録成功:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('Service Worker登録失敗:', error);
+                    });
+            });
+        }
+
+        // PWAインストールプロンプト
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // インストールボタンを表示するなどの処理をここに追加可能
+            console.log('PWAインストール可能です');
+        });
+
+        window.addEventListener('appinstalled', () => {
+            console.log('PWAがインストールされました');
+            deferredPrompt = null;
+        });
+    </script>
+    
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
         const LOCATIONS = ['東京都', '神奈川県', '埼玉県', '千葉県', '大阪府', '京都府', '兵庫県'];

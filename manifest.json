@@ -1,0 +1,28 @@
+{
+    "name": "ChoiCam♡ - ベビーシッターマッチング",
+    "short_name": "ChoiCam♡",
+    "description": "シッターマッチングから見守りまでを一元管理。大切なお子様の安全と笑顔を守ります。",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#fff1f2",
+    "theme_color": "#f43f5e",
+    "orientation": "portrait-primary",
+    "scope": "/",
+    "icons": [
+        {
+            "src": "icon.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icon.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": ["lifestyle", "social"],
+    "lang": "ja",
+    "dir": "ltr"
+}
