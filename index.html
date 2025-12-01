@@ -13,7 +13,6 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
     <style>
         body {
             font-family: 'Noto Sans JP', sans-serif;
@@ -35,16 +34,19 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
+
         @keyframes fadeInUp {
             from {
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
+
         .animate-fade-in-up {
             animation: fadeInUp 0.5s ease-out forwards;
         }
@@ -67,14 +69,10 @@
 
 <body class="bg-slate-50 text-slate-800 antialiased">
     <div id="root"></div>
-
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
-
         const LOCATIONS = ['東京都', '神奈川県', '埼玉県', '千葉県', '大阪府', '京都府', '兵庫県'];
-
         const POPULAR_TAGS = ['保育士資格', '英語対応', '病児保育', '新生児対応', '料理可', '宿題サポート', 'ピアノ指導'];
-
         const MOCK_SITTERS = [
             {
                 id: 's1',
@@ -199,7 +197,6 @@
                 reviews: []
             }
         ];
-
         const SitterList = ({ sitters, onSelectSitter }) => {
             return (
                 <div className="max-w-7xl mx-auto px-4 py-12">
@@ -214,7 +211,6 @@
                 </div>
             );
         };
-
         const SitterCard = ({ sitter, onClick }) => {
             return (
                 <div
@@ -269,11 +265,9 @@
                 </div>
             );
         };
-
         const BookingModal = ({ sitter, onClose, onSubmit }) => {
             const [step, setStep] = useState(1);
             const [isSubmitting, setIsSubmitting] = useState(false);
-
             const handleSubmit = (e) => {
                 e.preventDefault();
                 setIsSubmitting(true);
@@ -282,14 +276,12 @@
                     onSubmit();
                 }, 1500);
             };
-
             return (
                 <div className="fixed inset-0 z-50 overflow-y-auto">
                     <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                         <div className="fixed inset-0 transition-opacity" aria-hidden="true" onClick={onClose}>
                             <div className="absolute inset-0 bg-slate-900 opacity-75"></div>
                         </div>
-
                         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                         <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
                             {step === 1 ? (
@@ -352,11 +344,9 @@
                 </div>
             );
         };
-
         const Header = ({ currentView, onNavigate }) => {
             const isAuthFlow = ['REGISTER', 'CHILD_PROFILE'].includes(currentView);
             const isAppFlow = ['DASHBOARD', 'MONITORING', 'REVIEW'].includes(currentView);
-
             return (
                 <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-brand-100 shadow-sm">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -402,7 +392,6 @@
                 </header>
             );
         };
-
         const Hero = ({ onNavigate }) => {
             return (
                 <div className="relative bg-brand-50 pt-16 pb-20 lg:pt-24 lg:pb-28 overflow-hidden min-h-[calc(100vh-64px)] flex items-center">
@@ -446,10 +435,8 @@
                 </div>
             );
         };
-
         const Registration = ({ onNext }) => {
             const [loading, setLoading] = useState(false);
-
             const handleSubmit = (e) => {
                 e.preventDefault();
                 setLoading(true);
@@ -458,10 +445,8 @@
                     onNext();
                 }, 1000);
             };
-
             const inputClass = "w-full px-4 py-3 text-lg border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 focus:outline-none text-slate-900 placeholder-slate-400 bg-slate-50 transition-all";
             const labelClass = "block text-base font-bold text-slate-700 mb-2";
-
             return (
                 <div className="max-w-md mx-auto mt-10 px-4">
                     <div className="bg-white rounded-2xl shadow-lg p-8 border border-slate-100">
@@ -518,7 +503,6 @@
                 </div>
             );
         };
-
         const ChildProfile = ({ onNext }) => {
             const [profile, setProfile] = useState({
                 name: '',
@@ -527,15 +511,12 @@
                 allergies: '',
                 notes: ''
             });
-
             const handleSubmit = (e) => {
                 e.preventDefault();
                 onNext(profile);
             };
-
             const inputClass = "w-full px-4 py-3 text-lg border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 focus:outline-none text-slate-900 placeholder-slate-400 bg-slate-50 transition-all";
             const labelClass = "block text-base font-bold text-slate-700 mb-2";
-
             return (
                 <div className="max-w-md mx-auto mt-10 px-4">
                     <div className="bg-white rounded-2xl shadow-lg p-8 border border-slate-100">
@@ -628,13 +609,11 @@
                 </div>
             );
         };
-
         const Monitoring = ({ childProfile, onEndSession }) => {
             const videoRef = useRef(null);
             const [isRecording, setIsRecording] = useState(false);
             const [sessionTime, setSessionTime] = useState(0);
             const [stream, setStream] = useState(null);
-
             useEffect(() => {
                 const startCamera = async () => {
                     try {
@@ -650,16 +629,13 @@
                         console.error("Camera access denied:", err);
                     }
                 };
-
                 startCamera();
-
                 return () => {
                     if (stream) {
                         stream.getTracks().forEach(track => track.stop());
                     }
                 };
             }, []);
-
             useEffect(() => {
                 let interval;
                 if (isRecording) {
@@ -669,17 +645,14 @@
                 }
                 return () => clearInterval(interval);
             }, [isRecording]);
-
             const toggleRecording = () => {
                 setIsRecording(!isRecording);
             };
-
             const formatTime = (seconds) => {
                 const mins = Math.floor(seconds / 60);
                 const secs = seconds % 60;
                 return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
             };
-
             return (
                 <div className="flex flex-col h-[calc(100vh-64px)] bg-slate-900">
                     <div className="relative flex-1 bg-black flex items-center justify-center overflow-hidden">
@@ -746,20 +719,16 @@
                 </div>
             );
         };
-
         const ReviewSession = ({ onComplete }) => {
             const [rating, setRating] = useState(0);
             const [comment, setComment] = useState('');
-
             const handleSubmit = (e) => {
                 e.preventDefault();
                 alert("レビューを送信しました！ご利用ありがとうございました。");
                 onComplete();
             };
-
             const inputClass = "w-full px-4 py-3 text-lg border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 focus:outline-none text-slate-900 placeholder-slate-400 bg-slate-50 transition-all";
             const labelClass = "block text-base font-bold text-slate-700 mb-2 text-left";
-
             return (
                 <div className="max-w-md mx-auto mt-10 px-4 animate-fade-in-up">
                     <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-100 text-center">
@@ -768,7 +737,6 @@
                         </div>
                         <h2 className="text-2xl font-bold text-slate-800 mb-2">見守りが終了しました</h2>
                         <p className="text-slate-500 mb-8">今回のシッティングはいかがでしたか？</p>
-
                         <form onSubmit={handleSubmit}>
                             <div className="mb-8">
                                 <label className={labelClass + " text-center"}>シッターの評価</label>
@@ -794,7 +762,6 @@
                                     placeholder="シッターへの感謝の言葉や、気になった点などをご記入ください。"
                                 ></textarea>
                             </div>
-
                             <button
                                 type="submit"
                                 disabled={rating === 0}
@@ -814,7 +781,6 @@
                 </div>
             );
         };
-
         function App() {
             const [view, setView] = useState('HOME');
             const [childProfile, setChildProfile] = useState(null);
@@ -845,7 +811,7 @@
                         <div className="bg-brand-50 p-8 text-center border-b border-brand-100">
                             <h2 className="text-2xl font-bold text-slate-800">準備が完了しました</h2>
                             <p className="text-slate-600 mt-2">本日担当のシッターがマッチングしました。</p>
-                            </div>
+                        </div>
                         <div className="p-8">
                             <div className="flex items-center bg-slate-50 p-4 rounded-2xl mb-8">
                                 <img src="https://picsum.photos/id/64/400/400" className="w-16 h-16 rounded-full object-cover mr-4 shadow-sm" alt="Sitter" />
@@ -885,7 +851,6 @@
                     </div>
                 </div>
             );
-
             return (
                 <div className="min-h-screen bg-slate-50 font-sans">
                     <Header currentView={view} onNavigate={setView} />
